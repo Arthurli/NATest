@@ -16,7 +16,7 @@ module.exports = function fetchField(body, paths) {
       return null
     }
   }
-
+  
   return field;
 };
 

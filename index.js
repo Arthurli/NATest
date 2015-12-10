@@ -8,7 +8,7 @@ var fetchField = require('./field');
 var assertMap = require('./assert').assertMap;
 
 function NATest() {
-  this.globalVariable = {"123":"123"};
+  this.globalVariable = {};
   this.accounts = {};
   this.rooturl = "http://localhost";
 }
@@ -88,8 +88,9 @@ NATest.prototype.testCase = function(testcase) {
       req = req.expect(stauts);
 
       req.end(function (err, res) {
+        var body = res.body;
+        console.log(body);
         if (!err) {
-          var body = res.body;
           should.exist(body);
           self.assertFields(body, asserts);
           self.setVariables(body, variables);
@@ -116,19 +117,25 @@ NATest.prototype.setVariables = function(body, variables) {
   }
 };
 
-NATest.prototype.transformVariables = function(str) {
-  var result = str;
-  var patrn = /[{]{1}[\w]+[}]{1}/;
-  while (patrn.test(result)) {
-    var regexpStr = patrn.exec(result)[0];
-    var variableName = regexpStr.slice(1, regexpStr.length-1);
-    var variable = this.globalVariable[variableName];
-    if (!variable) {
-      variable = ""
+NATest.prototype.transformVariables = function(value) {
+
+  //当 value 为 string 的时候去做转化
+  if (typeof value === "string") {
+    var result = value;
+    var patrn = /[{]{1}[\w]+[}]{1}/;
+    while (patrn.test(result)) {
+      var regexpStr = patrn.exec(result)[0];
+      var variableName = regexpStr.slice(1, regexpStr.length-1);
+      var variable = this.globalVariable[variableName];
+      if (!variable) {
+        variable = ""
+      }
+      result = result.replace(regexpStr,variable);
     }
-    result = result.replace(regexpStr,variable);
+    return result;
   }
-  return result;
+
+  return value
 };
 
 NATest.prototype.assertFields = function(body, asserts) {
@@ -139,6 +146,7 @@ NATest.prototype.assertFields = function(body, asserts) {
 
     for (var assertRowKey in assertRows) {
       var assertRowVaule = assertRows[assertRowKey];
+      assertRowVaule = this.transformVariables(assertRowVaule);
       assertFuction(body,assertRowKey,assertRowVaule);
     }
   }
