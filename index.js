@@ -8,30 +8,35 @@ var fetchField = require('./field');
 var assertMap = require('./assert').assertMap;
 
 function NATest() {
-  this.client = new KS3(config.AccessKeyID,
-    config.AccessKeySecret, config.Bucket);
+  this.globalVariable = {"123":"123"};
+  this.accounts = {};
+  this.rooturl = "http://localhost";
 }
 
 module.exports = NATest;
 
-NATest.prototype.globalVariable = {};
 NATest.prototype.auth = function(account, password, callback) {
   callback(null, null);
 };
 
 NATest.prototype.testFile = function(path) {
+  var self = this;
+
   var json = require(path);
   var accounts = json.account;
   var url = json.rooturl;
   var testcases = json.testcases;
   var jsonDescription = json.description;
 
+  self.accounts = accounts;
+  self.rooturl = url;
+
   describe(jsonDescription, function () {
     before(function(done) {
       var functions = [];
       var insert = function(account, password){
         functions.push(function(callback){
-          auth(account, password, function(error, cookie) {
+          self.auth(account, password, function(error, cookie) {
             callback()
           });
         });
@@ -52,15 +57,17 @@ NATest.prototype.testFile = function(path) {
 
     for(var i in testcases) {
       var testcase = testcases[i];
-      test(testcase);
+      self.testCase(testcase);
     }
   });
-}
+};
 
-NATest.prototype.test = function(testcase) {
+NATest.prototype.testCase = function(testcase) {
+  var self = this;
+
   var description = testcase.description;
   var account = testcase.account;
-  var password = accounts[account];
+  var password = this.accounts[account];
   var path = testcase.path;
   var method = testcase.method;
   var stauts = testcase.stauts;
@@ -69,29 +76,29 @@ NATest.prototype.test = function(testcase) {
   var requestBody = testcase.body;
 
   it(description, function (done) {
-    this.auth(account, password, function(error, cookie) {
+    self.auth(account, password, function(error, cookie) {
       if (error) {
         should.not.exist(error);
         return;
       }
 
-      var req = this.setMethodAndPath(supertest,method, this.transformVariables(path));
+      var req = self.setMethodAndPath(supertest,method, self.transformVariables(path));
       req = req.set('Cookie', cookie);
-      req = this.setRequestBody(req, requestBody);
+      req = self.setRequestBody(req, requestBody);
       req = req.expect(stauts);
 
       req.end(function (err, res) {
         if (!err) {
           var body = res.body;
           should.exist(body);
-          this.assertFields(body, asserts);
-          this.setVariables(body, variables);
+          self.assertFields(body, asserts);
+          self.setVariables(body, variables);
         }
         done(err);
       });
     });
   });
-}
+};
 
 NATest.prototype.setRequestBody = function(req, requestBody) {
   for (var fieldName in requestBody) {
@@ -99,7 +106,7 @@ NATest.prototype.setRequestBody = function(req, requestBody) {
     req = req.field(fieldName, this.transformVariables(field));
   }
   return req;
-}
+};
 
 NATest.prototype.setVariables = function(body, variables) {
   for (var variable in variables) {
@@ -107,7 +114,7 @@ NATest.prototype.setVariables = function(body, variables) {
     var value =  fetchField(body, parse(path));
     this.globalVariable[variable] = value;
   }
-}
+};
 
 NATest.prototype.transformVariables = function(str) {
   var result = str;
@@ -122,7 +129,7 @@ NATest.prototype.transformVariables = function(str) {
     result = result.replace(regexpStr,variable);
   }
   return result;
-}
+};
 
 NATest.prototype.assertFields = function(body, asserts) {
 
@@ -135,20 +142,20 @@ NATest.prototype.assertFields = function(body, asserts) {
       assertFuction(body,assertRowKey,assertRowVaule);
     }
   }
-}
+};
 
 NATest.prototype.setMethodAndPath = function(supertest, method, path) {
   switch (method) {
     case "DELETE":
-      return supertest(url).del(path);
+      return supertest(this.rooturl).del(path);
       break;
     case "POST":
-      return supertest(url).post(path);
+      return supertest(this.rooturl).post(path);
       break;
     case "PUT":
-      return supertest(url).put(path);
+      return supertest(this.rooturl).put(path);
       break;
     default:
-      return supertest(url).get(path);
+      return supertest(this.rooturl).get(path);
   }
-}
+};
