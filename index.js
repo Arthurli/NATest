@@ -123,14 +123,23 @@ NATest.prototype.transformVariables = function(value) {
   if (typeof value === "string") {
     var result = value;
     var patrn = /[{]{1}[\w]+[}]{1}/;
+    var replaceNumber = 0;
     while (patrn.test(result)) {
       var regexpStr = patrn.exec(result)[0];
       var variableName = regexpStr.slice(1, regexpStr.length-1);
       var variable = this.globalVariable[variableName];
+      
+      //如果只是赋值参数  直接返回
+      if (replaceNumber == 0 && regexpStr == result) {
+        return variable;
+      }
+
       if (!variable) {
         variable = ""
       }
+
       result = result.replace(regexpStr,variable);
+      replaceNumber++;
     }
     return result;
   }
