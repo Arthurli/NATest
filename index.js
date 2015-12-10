@@ -27,7 +27,11 @@ NATest.prototype.testFile = function(path) {
   var url = json.rooturl;
   var testcases = json.testcases;
   var jsonDescription = json.description;
+  var defaultVariables = json.defaultVariable;
 
+  for (var i in defaultVariables) {
+    self.globalVariable[i] = defaultVariables[i];
+  }
   self.accounts = accounts;
   self.rooturl = url;
 
@@ -89,7 +93,7 @@ NATest.prototype.testCase = function(testcase) {
 
       req.end(function (err, res) {
         var body = res.body;
-        console.log(body);
+        // console.log(body);
         if (!err) {
           should.exist(body);
           self.assertFields(body, asserts);
@@ -127,6 +131,7 @@ NATest.prototype.transformVariables = function(value) {
     while (patrn.test(result)) {
       var regexpStr = patrn.exec(result)[0];
       var variableName = regexpStr.slice(1, regexpStr.length-1);
+
       var variable = this.globalVariable[variableName];
       
       //如果只是赋值参数  直接返回
