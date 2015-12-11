@@ -19,6 +19,22 @@ NATest.prototype.auth = function(account, password, callback) {
   callback(null, null);
 };
 
+/*
+NATest.prototype.transform = function(value, name ,context) {
+  return value;
+};
+*/
+
+
+/*
+
+  这里可以设置一个每一个 description 的对象  里面可以设置 这个环境的
+  参数 ,并且可以设置 一系列的 转化方法和 hook 方法, 未来可以写成 d 执行 run 才会 执行测试
+
+*/
+
+
+
 NATest.prototype.testFile = function(path) {
   var self = this;
 
@@ -86,7 +102,7 @@ NATest.prototype.testCase = function(testcase) {
         return;
       }
 
-      var req = self.setMethodAndPath(supertest,method, self.transformVariables(path));
+      var req = self.setMethodAndPath(supertest,method, self.transformVariables(path, "path"));
       req = req.set('Cookie', cookie);
       req = self.setRequestBody(req, requestBody);
       req = req.expect(stauts);
@@ -108,7 +124,7 @@ NATest.prototype.testCase = function(testcase) {
 NATest.prototype.setRequestBody = function(req, requestBody) {
   for (var fieldName in requestBody) {
     var field = requestBody[fieldName];
-    req = req.field(fieldName, this.transformVariables(field));
+    req = req.field(fieldName, this.transformVariables(field, "body"));
   }
   return req;
 };
@@ -121,7 +137,7 @@ NATest.prototype.setVariables = function(body, variables) {
   }
 };
 
-NATest.prototype.transformVariables = function(value) {
+NATest.prototype.transformVariables = function(value, context) {
 
   //当 value 为 string 的时候去做转化
   if (typeof value === "string") {
@@ -134,6 +150,10 @@ NATest.prototype.transformVariables = function(value) {
 
       var variable = this.globalVariable[variableName];
       
+      if (this.transform) {
+        variable = this.transform(variable, variableName, context);
+      }
+
       //如果只是赋值参数  直接返回
       if (replaceNumber == 0 && regexpStr == result) {
         return variable;
@@ -160,7 +180,7 @@ NATest.prototype.assertFields = function(body, asserts) {
 
     for (var assertRowKey in assertRows) {
       var assertRowVaule = assertRows[assertRowKey];
-      assertRowVaule = this.transformVariables(assertRowVaule);
+      assertRowVaule = this.transformVariables(assertRowVaule, "assert");
       assertFuction(body,assertRowKey,assertRowVaule);
     }
   }
