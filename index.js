@@ -109,7 +109,7 @@ NATest.prototype.testCase = function(testcase) {
 
       req.end(function (err, res) {
         var body = res.body;
-        // console.log(body);
+        console.log(body);
         if (!err) {
           should.exist(body);
           self.assertFields(body, asserts);
@@ -121,6 +121,7 @@ NATest.prototype.testCase = function(testcase) {
   });
 };
 
+//  TODO:验证参数如果有数组的情况
 NATest.prototype.setRequestBody = function(req, requestBody) {
   for (var fieldName in requestBody) {
     var field = requestBody[fieldName];
@@ -133,7 +134,7 @@ NATest.prototype.setVariables = function(body, variables) {
   for (var variable in variables) {
     var path = variables[variable];
     var value =  fetchField(body, parse(path));
-    if value != null {
+    if (value) {
       this.globalVariable[variable] = value;
     } else {
       console.log("variable error:" + path);
@@ -146,14 +147,41 @@ NATest.prototype.transformVariables = function(value, context) {
   //当 value 为 string 的时候去做转化
   if (typeof value === "string") {
     var result = value;
-    var patrn = /[{]{1}[\w]+[}]{1}/;
+    var variablesPatrn = /[{]{1}[\S]+?[}]{1}/;
     var replaceNumber = 0;
-    while (patrn.test(result)) {
-      var regexpStr = patrn.exec(result)[0];
+    while (variablesPatrn.test(result)) {
+      var regexpStr = variablesPatrn.exec(result)[0];
       var variableName = regexpStr.slice(1, regexpStr.length-1);
 
-      var variable = this.globalVariable[variableName];
+      var variable;
+
+
+      //查看是否需要强转换
+      var conversionPatrn = /\.\((boolean|string|number){1}\)/;
+      if (conversionPatrn.test(variableName)) {
+        var conversionRegexpStr = conversionPatrn.exec(variableName)[0];
+        variableName = variableName.replace(conversionRegexpStr,"");
+        variable = this.globalVariable[variableName];
+
+        if (conversionRegexpStr == ".(string)") {
+          variable = String(variable);
+        } else if (conversionRegexpStr == ".(number)") {
+          variable = Number(variable);
+        } else if (conversionRegexpStr == ".(boolean)") {
+          if (typeof variable === "string") { 
+            if (variable == "false") {
+              return false;
+            }
+            return true
+          } else {
+            variable = Boolean(variable);
+          }
+        }
+      } else {
+        variable = this.globalVariable[variableName];
+      }
       
+
       if (this.transform) {
         variable = this.transform(variable, variableName, context);
       }
