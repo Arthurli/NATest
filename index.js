@@ -96,6 +96,7 @@ NATest.prototype.testCase = function(describeObject, testcase) {
   var stauts = testcase.stauts;
   var asserts = testcase.assert;
   var variables = testcase.variable;
+  var headers = testcase.headers;
   var requestBody = testcase.body;
 
   it(description, function (done) {
@@ -106,7 +107,10 @@ NATest.prototype.testCase = function(describeObject, testcase) {
       }
       var req = supertest(describeObject.rooturl);
       req = self.setMethodAndPath(req, method, self.transformVariables(path, "path"));
-      req = req.set('Cookie', cookie);
+      if (cookie) {
+        req = req.set('Cookie', cookie);
+      }
+      req = self.setRequestHeaders(req, headers);
       req = self.setRequestBody(req, requestBody);
       req = req.expect(stauts);
 
@@ -125,7 +129,14 @@ NATest.prototype.testCase = function(describeObject, testcase) {
   });
 };
 
-//  TODO:验证参数如果有数组的情况
+NATest.prototype.setRequestHeaders = function(req, headers) {
+  for (var fieldName in headers) {
+    var field = headers[fieldName];
+    req = req.set(fieldName, this.transformVariables(field, "header"));
+  }
+  return req;
+};
+
 NATest.prototype.setRequestBody = function(req, requestBody) {
   for (var fieldName in requestBody) {
     var field = requestBody[fieldName];
