@@ -109,6 +109,7 @@ NATest.prototype.testCase = function(testcase) {
 
       req.end(function (err, res) {
         var body = res.body;
+        console.log(self.transformVariables(path, "path"));
         console.log(body);
         if (!err) {
           should.exist(body);

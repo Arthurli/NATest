@@ -5,7 +5,7 @@ module.exports = function fetchField(body, paths) {
   for (var i in paths) {
     var path = paths[i];
 
-    var patrn=/[^(]{1}[\w]+[)]{1}$/;
+    var patrn=/^[(]{1}[\w]+[)]{1}$/;
     if (patrn.test(path)) {
       field = getAttribute(field ,path);
     } else {
@@ -20,10 +20,10 @@ module.exports = function fetchField(body, paths) {
   return field;
 };
 
-// 属性写为 (attribute), 目前只支持 count
-// TODO: 获取数组第几个 
 function getAttribute(field, path) {
   var attribute = path.slice(1, path.length-1);
+  var patrn=/^[0-9]\d*$/;
+
   switch (attribute) {
     case "count":
       return field.length;
@@ -31,7 +31,10 @@ function getAttribute(field, path) {
     case "length":
       return field.length;
       break;
-    default:
-      return field;
+    default:  
+      if (patrn.test(attribute)) {  
+        return field[Number(attribute)];
+      }
+    return field;
   }
 }
