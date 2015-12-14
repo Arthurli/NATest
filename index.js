@@ -133,7 +133,11 @@ NATest.prototype.setVariables = function(body, variables) {
   for (var variable in variables) {
     var path = variables[variable];
     var value =  fetchField(body, parse(path));
-    this.globalVariable[variable] = value;
+    if value != null {
+      this.globalVariable[variable] = value;
+    } else {
+      console.log("variable error:" + path);
+    }
   }
 };
 
