@@ -9,6 +9,9 @@ var assertMap = require('./assert').assertMap;
 
 function NATest() {
   this.globalVariable = {};
+}
+
+function NADescribe() {
   this.accounts = {};
   this.rooturl = "http://localhost";
 }
@@ -25,31 +28,29 @@ NATest.prototype.transform = function(value, name ,context) {
 };
 */
 
-
 /*
-
   这里可以设置一个每一个 description 的对象  里面可以设置 这个环境的
   参数 ,并且可以设置 一系列的 转化方法和 hook 方法, 未来可以写成 d 执行 run 才会 执行测试
-
 */
-
-
 
 NATest.prototype.testFile = function(path) {
   var self = this;
+  var describeObject = new NADescribe();
 
   var json = require(path);
   var accounts = json.account;
   var url = json.rooturl;
   var testcases = json.testcases;
   var jsonDescription = json.description;
-  var defaultVariables = json.defaultVariable;
 
+  //设置默认参数
+  var defaultVariables = json.defaultVariable;
   for (var i in defaultVariables) {
     self.globalVariable[i] = defaultVariables[i];
   }
-  self.accounts = accounts;
-  self.rooturl = url;
+
+  describeObject.accounts = accounts;
+  describeObject.rooturl = url;
 
   describe(jsonDescription, function () {
     before(function(done) {
@@ -77,17 +78,19 @@ NATest.prototype.testFile = function(path) {
 
     for(var i in testcases) {
       var testcase = testcases[i];
-      self.testCase(testcase);
+      self.testCase(describeObject, testcase);
     }
   });
+
+  return describeObject;
 };
 
-NATest.prototype.testCase = function(testcase) {
+NATest.prototype.testCase = function(describeObject, testcase) {
   var self = this;
 
   var description = testcase.description;
   var account = testcase.account;
-  var password = this.accounts[account];
+  var password = describeObject.accounts[account];
   var path = testcase.path;
   var method = testcase.method;
   var stauts = testcase.stauts;
@@ -101,8 +104,8 @@ NATest.prototype.testCase = function(testcase) {
         should.not.exist(error);
         return;
       }
-
-      var req = self.setMethodAndPath(supertest,method, self.transformVariables(path, "path"));
+      var req = supertest(describeObject.rooturl);
+      req = self.setMethodAndPath(req, method, self.transformVariables(path, "path"));
       req = req.set('Cookie', cookie);
       req = self.setRequestBody(req, requestBody);
       req = req.expect(stauts);
@@ -219,18 +222,18 @@ NATest.prototype.assertFields = function(body, asserts) {
   }
 };
 
-NATest.prototype.setMethodAndPath = function(supertest, method, path) {
+NATest.prototype.setMethodAndPath = function(request, method, path) {
   switch (method) {
     case "DELETE":
-      return supertest(this.rooturl).del(path);
+      return request.del(path);
       break;
     case "POST":
-      return supertest(this.rooturl).post(path);
+      return request.post(path);
       break;
     case "PUT":
-      return supertest(this.rooturl).put(path);
+      return request.put(path);
       break;
     default:
-      return supertest(this.rooturl).get(path);
+      return request.get(path);
   }
 };
