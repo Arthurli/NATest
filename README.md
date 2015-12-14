@@ -10,7 +10,7 @@
 
   ~~~
   //index.js
-  var NATest = require('../NATest');
+  var NATest = require('natest');
   var test = new NATest();
 
   // 初始化测试数据
