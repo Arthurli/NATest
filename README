@@ -24,6 +24,8 @@
 
   ~~~
 
+5. 最后使用 mocha 命令执行测试 `./node_modules/mocha/bin/mocha -t 20000 index.js`
+
 ## NATest 对象
 * 每一个 NATest 对象拥有同一个上下文, 也就是说 test.testFile 文件可以使用之前初始化过的数据或者是参数  
 * 如果想拥有多个上下文, 那么生成多个 NATest 对象进行测试  
