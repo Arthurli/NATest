@@ -138,11 +138,12 @@ NATest.prototype.setRequestHeaders = function(req, headers) {
 };
 
 NATest.prototype.setRequestBody = function(req, requestBody) {
+  var body = {};
   for (var fieldName in requestBody) {
     var field = requestBody[fieldName];
-    req = req.field(fieldName, this.transformVariables(field, "body"));
+    body[fieldName] = this.transformVariables(field, "body");
   }
-  return req;
+  req = req.send(body);
 };
 
 NATest.prototype.setVariables = function(body, variables) {
