@@ -215,6 +215,17 @@ NATest.prototype.transformVariables = function(value, context) {
       replaceNumber++;
     }
     return result;
+  } else if (typeof value === "object") {
+
+    var result = {};
+    if (isArrayFn(value)) {
+      result = new Array();
+    }
+
+    for (var i in value) {
+      result[i] = this.transformVariables(value[i],context);
+    }
+    return result;
   }
 
   return value
@@ -249,3 +260,11 @@ NATest.prototype.setMethodAndPath = function(request, method, path) {
       return request.get(path);
   }
 };
+
+function isArrayFn(value){  
+  if (typeof Array.isArray === "function") {  
+      return Array.isArray(value);      
+  }else{  
+      return Object.prototype.toString.call(value) === "[object Array]";      
+  }  
+} 
