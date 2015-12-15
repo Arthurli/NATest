@@ -144,6 +144,8 @@ NATest.prototype.setRequestBody = function(req, requestBody) {
     body[fieldName] = this.transformVariables(field, "body");
   }
   req = req.send(body);
+
+  return req;
 };
 
 NATest.prototype.setVariables = function(body, variables) {
