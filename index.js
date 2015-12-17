@@ -42,6 +42,7 @@ NATest.prototype.testFile = function(path) {
   var url = json.rooturl;
   var testcases = json.testcases;
   var jsonDescription = json.description;
+  var timeout = json.timeout;
 
   //设置默认参数
   var defaultVariables = json.defaultVariable;
@@ -51,8 +52,14 @@ NATest.prototype.testFile = function(path) {
 
   describeObject.accounts = accounts;
   describeObject.rooturl = url;
+  describeObject.timeout = timeout;
 
   describe(jsonDescription, function () {
+
+    if (timeout) {
+      this.timeout(timeout);
+    }
+
     before(function(done) {
       var functions = [];
       var insert = function(account, password){

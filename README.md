@@ -44,51 +44,55 @@
 ~~~
 {
   // 这个文件的测试用例的描述	
-  "description": "文件相关测试:", 
+  "description": "文件相关测试:", //必选
   
   // 这个测试文件中用到的帐号和密码  
   "account": {
-    "test@test.com": "123123"     
+    "test@test.com": "123123"   //必选  
   },
   
   // 这个测试文件测试 api 的 host
-  "rooturl": "https://api.test.cn", 	
+  "rooturl": "https://api.test.cn", 	//必选
   
+  // 超时时间 毫秒
+  "timeout": 20000  //可选
+
   // 设置默认的参数 在后面可以使用 
   "defaultVariable": {
-  	 "fileid": 123123123
+  	 "fileid": 123123123     //可选
   },
   
   // 具体的测试用例
-  "testcases": [     
+  "testcases": [     //必选
     {
       //调用这个 API 的帐号, 会调用 test.auth 方法获取 cookie
-      "account": "test@test.com", 	
+      "account": "test@test.com", 	//必选
       
       //这个 testcase 的描述信息       
-      "description": "企业用户创建 card 新测试用 group",
+      "description": "企业用户创建 card 新测试用 group",  //必选
        
       // http method, 目前支持 GET POST PUT DELETE 四种方法
-      "method": "GET", 
+      "method": "GET",  //可选 默认为 GET
       
       //测试的 api path, 可以使用参数 		
-      "path": "/api/file/{fileid}", 
+      "path": "/api/file/{fileid}", //必选
       
       // 期待的 http status		
-      "stauts": 200, 
+      "stauts": 200,  //必选
       
       // request header, 可以使用参数 
-      "headers": {    					
+      "headers": {    	//可选
         "name": "testfile"  
       },
       
       // request body, 可以使用参数 
-      "body": {    					
+      "body": {    			//可选
         "name": "testfile"  
       },
       
       // 验证返回值,可以使用参数
-      "assert": {
+      "assert": {       //可选
+
         // 断言方式 目前有6种 //目前断言分6种, equal, notEqual, less, greater, exist, notExist, exist 和 notExist 的 value 设置为 "" 即可
         "equal": {
         
@@ -99,7 +103,8 @@
       },
       
       // 设置参数, 设置一个 testVariable 的参数, 在后面的测试中可以使用 eg {testVariable}
-      "variable": {
+
+      "variable": {     //可选
         "testVariable": "file.name"
       }
     }
