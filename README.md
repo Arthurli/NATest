@@ -133,12 +133,14 @@
 
 // fileid = 111
 // groupid = 222
-
+// used = 10000
 ...
 "path": "/api/files/{fileid}" // 把 {fileid} 替换成 111, path = "/api/files/111"
 ...
 "body": {
-  "groupid": "{groupid}" //如果只有一个转换参数,则直接返回参数 groupid = 222
+  "groupid": "{groupid}", //如果只有一个转换参数,则直接返回参数 groupid = 222
+  "used": "{used}[-1000]" //如果只有一个转换参数,且为 number, 可以在结尾使用 [] 来进行 加减操作 groupid = (10000 - 1000)
+
   "fileidstring": "{fileid.(string)}" //如果参数类型不一样, 可以使用 .(string) 这种语法进行转换
   // 转换一共有三种 .(string|number|boolean)
 }

@@ -206,14 +206,28 @@ NATest.prototype.transformVariables = function(value, context) {
         variable = this.globalVariable[variableName];
       }
       
-
       if (this.transform) {
         variable = this.transform(variable, variableName, context);
       }
 
-      //如果只是赋值参数  直接返回
-      if (replaceNumber == 0 && regexpStr == result) {
-        return variable;
+      if (replaceNumber == 0) {
+
+        //如果第一次转换 需要判断是否需要 + - 数
+        var mathPatrn = /\[(\-)?\d+\]$/;
+        if (mathPatrn.test(result) && typeof variable == "number") {
+          var mathRegexpStr = mathPatrn.exec(result)[0];
+          var mathNumber = mathRegexpStr.slice(1, mathRegexpStr.length-1);
+          var number = Number(mathNumber);
+
+          r = result.replace(mathRegexpStr,"");
+          if (regexpStr == r) {
+            return variable + number;
+          }
+
+        } else if (regexpStr == result) {
+          //如果只是赋值参数  直接返回
+          return variable;
+        }
       }
 
       if (!variable) {
@@ -223,7 +237,9 @@ NATest.prototype.transformVariables = function(value, context) {
       result = result.replace(regexpStr,variable);
       replaceNumber++;
     }
+
     return result;
+
   } else if (typeof value === "object") {
 
     var result = {};
@@ -247,7 +263,7 @@ NATest.prototype.assertFields = function(body, asserts) {
     var assertFuction =  assertMap[type]
 
     for (var assertRowKey in assertRows) {
-      var assertRowVaule = assertRows[assertRowKey];
+      var assertRowVaule = assertRows[assertRowKey]; 
       assertRowVaule = this.transformVariables(assertRowVaule, "assert");
       assertFuction(body,assertRowKey,assertRowVaule);
     }
