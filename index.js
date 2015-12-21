@@ -50,7 +50,7 @@ NATest.prototype.testFile = function(path) {
     self.globalVariable[i] = defaultVariables[i];
   }
 
-  describeObject.accounts = accounts;
+  describeObject.accounts = accounts?accounts:{};
   describeObject.rooturl = url;
   describeObject.timeout = timeout;
 
@@ -129,6 +129,8 @@ NATest.prototype.testCase = function(describeObject, testcase) {
           should.exist(body);
           self.assertFields(body, asserts);
           self.setVariables(body, variables);
+        } else {
+          console.log(err);
         }
         done(err);
       });
@@ -145,12 +147,15 @@ NATest.prototype.setRequestHeaders = function(req, headers) {
 };
 
 NATest.prototype.setRequestBody = function(req, requestBody) {
-  var body = {};
-  for (var fieldName in requestBody) {
-    var field = requestBody[fieldName];
-    body[fieldName] = this.transformVariables(field, "body");
+
+  if (requestBody) {
+    var body = {};
+    for (var fieldName in requestBody) {
+      var field = requestBody[fieldName];
+      body[fieldName] = this.transformVariables(field, "body");
+    }
+    req = req.send(body);
   }
-  req = req.send(body);
 
   return req;
 };
