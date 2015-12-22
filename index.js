@@ -18,7 +18,7 @@ function NADescribe() {
 
 module.exports = NATest;
 
-NATest.prototype.auth = function(account, password, callback) {
+NATest.prototype.auth = function(testcase, account, password, callback) {
   callback(null, null);
 };
 
@@ -64,7 +64,7 @@ NATest.prototype.testFile = function(path) {
       var functions = [];
       var insert = function(account, password){
         functions.push(function(callback){
-          self.auth(account, password, function(error, cookie) {
+          self.auth(self, account, password, function(error, cookie) {
             callback()
           });
         });
@@ -107,7 +107,7 @@ NATest.prototype.testCase = function(describeObject, testcase) {
   var requestBody = testcase.body;
 
   it(description, function (done) {
-    self.auth(account, password, function(error, cookie) {
+    self.auth(self, account, password, function(error, cookie) {
       if (error) {
         should.not.exist(error);
         return;
