@@ -11,13 +11,13 @@ var assertMap = require('./assert').assertMap;
 function NATest(args) {
   this.globalVariable = {};
   this.accounts = {};
-  this.rooturl = "http://localhost";
   this.timeout = 0;
+  this.rooturl = "";
 
   if (args) {
     // 设置默认参数
-    if (args.timeout) { this.timeout = test.timeout; }
-    if (args.rooturl) { this.rooturl = test.rooturl; }
+    if (args.timeout) { this.timeout = args.timeout; }
+    if (args.rooturl) { this.rooturl = args.rooturl; }
     for (var i in args.accounts) {
       this.accounts[i] = args.accounts[i];
     }
@@ -29,6 +29,8 @@ function NATest(args) {
 
 function NADescribe(test) {
   this.accounts = {};
+  this.rooturl = "";
+  this.timeout = 0;
   
   if (test.timeout) { this.timeout = test.timeout; }
   if (test.rooturl) { this.rooturl = test.rooturl; }
