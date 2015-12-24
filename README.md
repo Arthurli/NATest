@@ -137,6 +137,7 @@
         "c": "file.names.(1).name",       // 调用 该参数 [1] 方法 可以取数组数据
       }
 ~~~
+在点语法中 默认取 body 中的数据, 也可也在点语法开头使用 `__BODY.` or `__HEAD.` 表示取 header 或者是取 body
 
 ## 如何使用参数
 在 account, path , header 的 value, body 的 value, assert 的 value 中 可以使用 参数  

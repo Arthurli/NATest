@@ -154,12 +154,15 @@ NATest.prototype.testCase = function(describeObject, testcase) {
         if (res && res.body) {
           body = res.body;
         }
+
         // console.log(self.transformVariables(path, "path"));
-        // console.log(body);
+        // console.log(res.header);
+        // console.log(res.body);
+
         if (!err) {
-          should.exist(body);
-          self.assertFields(body, asserts);
-          self.setVariables(body, variables);
+          should.exist(res);
+          self.assertFields(res, asserts);
+          self.setVariables(res, variables);
         } else {
           console.log(err);
         }
@@ -191,10 +194,25 @@ NATest.prototype.setRequestBody = function(req, requestBody) {
   return req;
 };
 
-NATest.prototype.setVariables = function(body, variables) {
+NATest.prototype.setVariables = function(res, variables) {
+
+  var body = res.body ? res.body : {};
+  var header = res.header ? res.header : {};
+
   for (var variable in variables) {
     var path = variables[variable];
-    var value =  fetchField(body, parse(path));
+    var value;
+
+    if (path.indexOf("__BODY.") == 0) {
+      path = path.replace("__BODY.", "");
+      value =  fetchField(body, parse(path));
+    } else if (path.indexOf("__HEAD.") == 0) {
+      path = path.replace("__HEAD.", "");
+      value =  fetchField(header, parse(path));
+    } else {
+      value =  fetchField(body, parse(path));
+    }
+
     if (value || typeof value === "number") {
       this.globalVariable[variable] = value;
     } else {
@@ -292,7 +310,10 @@ NATest.prototype.transformVariables = function(value, context) {
   return value
 };
 
-NATest.prototype.assertFields = function(body, asserts) {
+NATest.prototype.assertFields = function(res, asserts) {
+
+  var body = res.body ? res.body : {};
+  var header = res.header ? res.header : {};
 
   for (var type in asserts) {
     var assertRows = asserts[type];
@@ -301,7 +322,17 @@ NATest.prototype.assertFields = function(body, asserts) {
     for (var assertRowKey in assertRows) {
       var assertRowVaule = assertRows[assertRowKey]; 
       assertRowVaule = this.transformVariables(assertRowVaule, "assert");
-      assertFuction(body,assertRowKey,assertRowVaule);
+
+
+      if (assertRowKey.indexOf("__BODY.") == 0) {
+        assertRowKey = assertRowKey.replace("__BODY.", "");
+        assertFuction(body,assertRowKey,assertRowVaule);
+      } else if (assertRowKey.indexOf("__HEAD.") == 0) {
+        assertRowKey = assertRowKey.replace("__HEAD.", "");
+        assertFuction(header,assertRowKey,assertRowVaule);
+      } else {
+        assertFuction(body,assertRowKey,assertRowVaule);
+      }
     }
   }
 };
