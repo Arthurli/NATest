@@ -7,13 +7,34 @@ var fetchField = require('./field');
 
 var assertMap = require('./assert').assertMap;
 
-function NATest() {
+//可以设置 natest 的一些默认属性
+function NATest(args) {
   this.globalVariable = {};
-}
-
-function NADescribe() {
   this.accounts = {};
   this.rooturl = "http://localhost";
+  this.timeout = 0;
+
+  if (args) {
+    // 设置默认参数
+    if (args.timeout) { this.timeout = test.timeout; }
+    if (args.rooturl) { this.rooturl = test.rooturl; }
+    for (var i in args.accounts) {
+      this.accounts[i] = args.accounts[i];
+    }
+    for (var i in args.globalVariable) {
+      this.globalVariable[i] = args.globalVariable[i];
+    }
+  }
+}
+
+function NADescribe(test) {
+  this.accounts = {};
+  
+  if (test.timeout) { this.timeout = test.timeout; }
+  if (test.rooturl) { this.rooturl = test.rooturl; }
+  for (var i in test.accounts) {
+    this.accounts[i] = test.accounts[i];
+  }
 }
 
 module.exports = NATest;
@@ -35,29 +56,34 @@ NATest.prototype.transform = function(value, name ,context) {
 
 NATest.prototype.testFile = function(path) {
   var self = this;
-  var describeObject = new NADescribe();
+  var describeObject = new NADescribe(self);
 
   var json = require(path);
-  var accounts = json.account;
-  var url = json.rooturl;
-  var testcases = json.testcases;
-  var jsonDescription = json.description;
-  var timeout = json.timeout;
-
+ 
   //设置默认参数
   var defaultVariables = json.defaultVariable;
   for (var i in defaultVariables) {
     self.globalVariable[i] = defaultVariables[i];
   }
 
-  describeObject.accounts = accounts?accounts:{};
-  describeObject.rooturl = url;
-  describeObject.timeout = timeout;
+  var accounts = json.account;
+  for (var i in accounts) {
+    describeObject.accounts[i] = accounts[i];
+  }
+
+  // 设置 describe url 和 timeout
+  var url = json.rooturl;
+  var timeout = json.timeout;
+  if (url) { describeObject.rooturl = url; }
+  if (timeout) { describeObject.timeout = timeout; }
+
+  var testcases = json.testcases;
+  var jsonDescription = json.description;
 
   describe(jsonDescription, function () {
 
-    if (timeout) {
-      this.timeout(timeout);
+    if (describeObject.timeout) {
+      this.timeout(describeObject.timeout);
     }
 
     before(function(done) {
@@ -121,8 +147,11 @@ NATest.prototype.testCase = function(describeObject, testcase) {
       req = self.setRequestBody(req, requestBody);
       req = req.expect(stauts);
 
-      req.end(function (err, res) {
-        var body = res.body;
+      req.end(function (err, res) {  
+        var body = {};
+        if (res && res.body) {
+          body = res.body;
+        }
         // console.log(self.transformVariables(path, "path"));
         // console.log(body);
         if (!err) {
