@@ -12,7 +12,20 @@
   //index.js
   var NATest = require('natest');
   var test = new NATest();
-
+  /*
+  也可以设置默认参数 均为为可选
+  var args = {
+    "accounts": {
+      "account": "password"
+    },
+    "globalVariable": {
+      "variable": "value"
+    },
+    "timeout": 3000,
+    "rooturl": "http://www.test.com"
+  }
+  var test = new NATest(args);
+  */
   // 初始化测试数据
   test.testFile(__dirname+'/testcase/create_data.json');
 
