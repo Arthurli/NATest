@@ -5,7 +5,7 @@
 
 1. 新建一个 node 工程
 2. 引入 mocha 和 NATest
-3. 创建一个 testcase 的 JSON 文件, JSON 格式见下文
+3. 创建一个 testcase 的 JSON 或者 js 文件, JSON 格式见下文, js 格式仿照 json
 4. 创建一个 index.js 文件, 导入上面的 JSON 文件
 
   ~~~
@@ -163,5 +163,32 @@
 ...
 ~~~
 
+##  使用 js 格式的 testcase
+使用 `module.exports={}` 来到处一个 object
+在 设置 body 和 header 的时候 值可以是一个 function, 参数是 test 对象, 可以取全局变量
 
+~~~
+...
+"body": {
+        "name":  function (test) {
+          return test.globalVariable.name;
+        } 
+      },
+...
+~~~
 
+在 设置 assert 和 variable 的时候 值可以是一个 function, 参数是 test 和 response 对象 可以根据具体情况 assert 不同的值
+
+~~~
+...
+"variable": {
+        "group_id": function (test, res) {
+          if (res.body.type == 1) {
+            return res.body.id;
+          } else {
+            return 0;
+          }
+        },
+      }
+...
+~~~

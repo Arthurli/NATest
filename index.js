@@ -175,7 +175,12 @@ NATest.prototype.testCase = function(describeObject, testcase) {
 NATest.prototype.setRequestHeaders = function(req, headers) {
   for (var fieldName in headers) {
     var field = headers[fieldName];
-    req = req.set(fieldName, this.transformVariables(field, "header"));
+
+    if (typeof field === "function") {
+      req = req.set(fieldName, field(this));
+    } else {
+      req = req.set(fieldName, this.transformVariables(field, "header"));
+    }
   }
   return req;
 };
@@ -186,7 +191,11 @@ NATest.prototype.setRequestBody = function(req, requestBody) {
     var body = {};
     for (var fieldName in requestBody) {
       var field = requestBody[fieldName];
-      body[fieldName] = this.transformVariables(field, "body");
+      if (typeof field === "function") {
+        body[fieldName] = field(this);
+      } else {
+        body[fieldName] = this.transformVariables(field, "body");
+      }
     }
     req = req.send(body);
   }
@@ -200,17 +209,24 @@ NATest.prototype.setVariables = function(res, variables) {
   var header = res.header ? res.header : {};
 
   for (var variable in variables) {
-    var path = variables[variable];
-    var value;
 
-    if (path.indexOf("__BODY.") == 0) {
-      path = path.replace("__BODY.", "");
-      value =  fetchField(body, parse(path));
-    } else if (path.indexOf("__HEAD.") == 0) {
-      path = path.replace("__HEAD.", "");
-      value =  fetchField(header, parse(path));
+    var value;
+    var path = variables[variable];
+
+    if (typeof path === "string") {
+      if (path.indexOf("__BODY.") == 0) {
+        path = path.replace("__BODY.", "");
+        value =  fetchField(body, parse(path));
+      } else if (path.indexOf("__HEAD.") == 0) {
+        path = path.replace("__HEAD.", "");
+        value =  fetchField(header, parse(path));
+      } else {
+        value =  fetchField(body, parse(path));
+      }
+    } else if (typeof path === "function") {
+      value = path(this, res);
     } else {
-      value =  fetchField(body, parse(path));
+      continue;
     }
 
     if (value || typeof value === "number") {
@@ -323,6 +339,9 @@ NATest.prototype.assertFields = function(res, asserts) {
       var assertRowVaule = assertRows[assertRowKey]; 
       assertRowVaule = this.transformVariables(assertRowVaule, "assert");
 
+      if (typeof assertRowVaule === "function") {
+        assertRowVaule = assertRowVaule(this, res);
+      }
 
       if (assertRowKey.indexOf("__BODY.") == 0) {
         assertRowKey = assertRowKey.replace("__BODY.", "");
