@@ -60,7 +60,7 @@
   "description": "文件相关测试:", //必选
   
   // 这个测试文件中用到的帐号和密码  
-  "account": {
+  "accounts": {
     "test@test.com": "123123"   //必选  
   },
   
@@ -91,7 +91,7 @@
       "path": "/api/file/{fileid}", //必选
       
       // 期待的 http status		
-      "stauts": 200,  //必选
+      "status": 200,  //必选
       
       // request header, 可以使用参数 
       "headers": {    	//可选
@@ -139,7 +139,7 @@
 ~~~
 
 ## 如何使用参数
-在 path , header 的 value, body 的 value, assert 的 value 中 可以使用 参数  
+在 account, path , header 的 value, body 的 value, assert 的 value 中 可以使用 参数  
 使用方法如下
 
 ~~~
@@ -147,6 +147,8 @@
 // fileid = 111
 // groupid = 222
 // used = 10000
+...
+"account": "{test-account-1}",
 ...
 "path": "/api/files/{fileid}" // 把 {fileid} 替换成 111, path = "/api/files/111"
 ...

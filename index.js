@@ -31,7 +31,7 @@ function NADescribe(test) {
   this.accounts = {};
   this.rooturl = "";
   this.timeout = 0;
-  
+
   if (test.timeout) { this.timeout = test.timeout; }
   if (test.rooturl) { this.rooturl = test.rooturl; }
   for (var i in test.accounts) {
@@ -68,7 +68,7 @@ NATest.prototype.testFile = function(path) {
     self.globalVariable[i] = defaultVariables[i];
   }
 
-  var accounts = json.account;
+  var accounts = json.accounts;
   for (var i in accounts) {
     describeObject.accounts[i] = accounts[i];
   }
@@ -124,11 +124,11 @@ NATest.prototype.testCase = function(describeObject, testcase) {
   var self = this;
 
   var description = testcase.description;
-  var account = testcase.account;
+  var account = self.transformVariables(testcase.account, "account");
   var password = describeObject.accounts[account];
   var path = testcase.path;
   var method = testcase.method;
-  var stauts = testcase.stauts;
+  var status = testcase.status;
   var asserts = testcase.assert;
   var variables = testcase.variable;
   var headers = testcase.headers;
@@ -147,7 +147,7 @@ NATest.prototype.testCase = function(describeObject, testcase) {
       }
       req = self.setRequestHeaders(req, headers);
       req = self.setRequestBody(req, requestBody);
-      req = req.expect(stauts);
+      req = req.expect(status);
 
       req.end(function (err, res) {  
         var body = {};
