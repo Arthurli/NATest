@@ -22,7 +22,13 @@
       "variable": "value"
     },
     "timeout": 3000,
-    "rooturl": "http://www.test.com"
+    "rooturl": "http://www.test.com",
+    "headers": {
+      "Origin": "https://test.cn"
+    },
+    "body": {
+      "name": "natest"
+    }
   }
   var test = new NATest(args);
   */
