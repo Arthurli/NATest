@@ -18,6 +18,9 @@ function NATest(args) {
     // 设置默认参数
     if (args.timeout) { this.timeout = args.timeout; }
     if (args.rooturl) { this.rooturl = args.rooturl; }
+    if (args.body) { this.body = args.body; }
+    if (args.headers) { this.headers = args.headers; }
+
     for (var i in args.accounts) {
       this.accounts[i] = args.accounts[i];
     }
@@ -122,7 +125,6 @@ NATest.prototype.testFile = function(path) {
 
 NATest.prototype.testCase = function(describeObject, testcase) {
   var self = this;
-
   var description = testcase.description;
   var account = self.transformVariables(testcase.account, "account");
   var password = describeObject.accounts[account];
@@ -132,7 +134,10 @@ NATest.prototype.testCase = function(describeObject, testcase) {
   var asserts = testcase.assert;
   var variables = testcase.variable;
   var headers = testcase.headers;
+  var defaultHeaders = self.headers;
   var requestBody = testcase.body;
+  var defaultBody = self.body;
+  var allRequestBody = mergeAllBody(requestBody, defaultBody);
 
   it(description, function (done) {
     self.auth(self, account, password, function(error, cookie) {
@@ -146,7 +151,8 @@ NATest.prototype.testCase = function(describeObject, testcase) {
         req = req.set('Cookie', cookie);
       }
       req = self.setRequestHeaders(req, headers);
-      req = self.setRequestBody(req, requestBody);
+      req = self.setRequestHeaders(req, defaultHeaders);
+      req = self.setRequestBody(req, allRequestBody);
       req = req.expect(status);
 
       req.end(function (err, res) {  
@@ -155,7 +161,7 @@ NATest.prototype.testCase = function(describeObject, testcase) {
           body = res.body;
         }
 
-        // console.log(self.transformVariables(path, "path"));
+        console.log(self.transformVariables(path, "path"));
         // console.log(res.header);
         // console.log(res.body);
 
@@ -379,3 +385,20 @@ function isArrayFn(value){
       return Object.prototype.toString.call(value) === "[object Array]";      
   }  
 } 
+
+function mergeAllBody(value1, value2) {
+  if (value1 == null && value2 == null) {
+    return null;
+  }
+
+  var body = {};
+  for (var fieldName in value1) {
+    var fieldValue = value1[fieldName];
+    body[fieldName] = fieldValue;
+  }
+  for (var fieldName in value2) {
+    var fieldValue = value2[fieldName];
+    body[fieldName] = fieldValue;
+  }
+  return body;
+}
