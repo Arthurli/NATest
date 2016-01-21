@@ -12,8 +12,8 @@ module.exports = function fetchField(body, paths) {
       field = field[path];
     }
 
-    if (!field && field !== 0) {
-      return null
+    if (field == null && field !== 0) {
+      return null;
     }
   }
   
